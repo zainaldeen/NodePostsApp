@@ -1,0 +1,29 @@
+{
+  "name": "postsapp",
+  "version": "1.0.0",
+  "description": "post app for training",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git remote add origin https://github.com/zainaldeen/PostsApp.git"
+  },
+  "keywords": [
+    "git",
+    "branch",
+    "-M",
+    "main"
+  ],
+  "author": "Zain Aldeen Fayod",
+  "license": "ISC",
+  "dependencies": {
+    "body-parser": "^1.19.2",
+    "express": "^4.17.3"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.15"
+  }
+}
