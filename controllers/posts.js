@@ -13,6 +13,28 @@ exports.getPosts = (req, res, next) => {
         });
 
 }
+exports.getPostById = (req, res, next) => {
+    let postId = req.params.postId;
+    Post.findById(postId)
+        .then(post => {
+            if (!post) {
+                const error = new Error('Post Not Found!');
+                error.statusCode = 404;
+                throw error;
+            }
+            res.status(200).json({
+                'message': 'Success!',
+                'post': post
+            })
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        });
+
+}
 exports.postPosts = (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -20,6 +42,12 @@ exports.postPosts = (req, res, next) => {
         error.statusCode= 422;
         throw error;
     }
+    if (!req.file) {
+        const error = new Error('No Image Provided!');
+        error.statusCode= 422;
+        throw error;
+    }
+    let imageURL = req.file.path;
     let title = req.body.title;
     let content = req.body.content;
     let post = new Post({
@@ -28,6 +56,7 @@ exports.postPosts = (req, res, next) => {
         creator: {
             name: "Zain "
         },
+        imageURL: imageURL,
         createdAt: new Date()
     });
     post.save()

@@ -6,9 +6,10 @@ const postController = require('../controllers/posts');
 const router = express.Router();
 
 router.get('/posts', postController.getPosts);
+router.get('/posts/:postId', postController.getPostById);
 router.post('/post', [
-    body('title').trim().isLength({min: 8}),
-    body('content').trim().isLength({min: 8}),
+    body('title').trim().isLength({min: 5}),
+    body('content').trim().isLength({min: 5}),
 ], postController.postPosts);
 
 module.exports = router;

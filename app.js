@@ -1,12 +1,23 @@
 const express = require('express');
+const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const multer = require('multer');
 
+const { fileStorage, fileFilter } = require('./utils/utils');
 const postRouter = require('./routes/posts');
 const app = express();
 
 const MONGODB_URI = 'mongodb+srv://root:root@trainingapp.crp6h.mongodb.net/feeds-app?authSource=admin&replicaSet=atlas-azjdlh-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true';
+
+
 app.use(bodyParser.json()); // for Application/json format
+app.use(
+    multer({storage: fileStorage, fileFilter: fileFilter})
+        .single('image')
+);
+
+app.use('/storage', express.static(path.join(__dirname, 'storage')));
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
