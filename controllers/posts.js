@@ -122,6 +122,22 @@ exports.updatePost = (req, res, next) => {
             next(err);
         })
 }
+
+exports.deletePost = (req, res, next) => {
+    const postId = req.params.postId;
+    Post.findOneAndDelete({ _id: postId})
+        .then(result => {
+            res.status(200).json({
+                message: 'Post Deleted Successfully!'
+            })
+        })
+        .catch(err => {
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        })
+}
 clearImage = filename => {
     filename = path.join(__dirname, '..', filename);
     fs.unlink(filename, err => console.log(err));
