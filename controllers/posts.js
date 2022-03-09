@@ -4,16 +4,39 @@ const path = require('path');
 const Post = require('../models/posts');
 const { handleErrors } = require('../utils/utils');
 exports.getPosts = (req, res, next) => {
-    Post.find()
-        .then(posts => {
-            res.status(200).json({
-                'message': 'All Posts Available For You!',
-                'posts': posts
-            })
+    const page = req.query.page || 1;
+    const perPage = req.query.perPage || 2;
+    let totalItems;
+    Post
+        .countDocuments()
+        .then(total => {
+            totalItems = total;
+            Post.find()
+                .skip((page - 1) * perPage)
+                .limit(perPage)
+                .then(posts => {
+                    res.status(200).json({
+                        'message': 'All Posts Available For You!',
+                        'posts': posts,
+                        'page': page,
+                        'perPage': perPage,
+                        'totalItems': totalItems
+                    })
+                })
+                .catch(err => {
+                    if (!err.statusCode) {
+                        err.statusCode = 500;
+                    }
+                    next(err);
+                })
+
         })
         .catch(err => {
-            console.log(err);
-        });
+            if (!err.statusCode) {
+                err.statusCode = 500;
+            }
+            next(err);
+        })
 
 }
 exports.getPostById = (req, res, next) => {
