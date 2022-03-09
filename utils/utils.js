@@ -19,3 +19,9 @@ exports.fileFilter = (req, file, cb) => {
     }
     cb(null, false);
 }
+
+exports.handleErrors = (message, statusCode) => {
+    const error = new Error(message);
+    error.statusCode = statusCode;
+    return error;
+}

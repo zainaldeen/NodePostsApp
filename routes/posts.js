@@ -12,4 +12,6 @@ router.post('/post', [
     body('content').trim().isLength({min: 5}),
 ], postController.postPosts);
 
+router.put('/post/:postId', postController.updatePost);
+
 module.exports = router;
