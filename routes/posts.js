@@ -7,11 +7,12 @@ const router = express.Router();
 
 router.get('/posts', isAuth, postController.getPosts);
 router.get('/posts/:postId', isAuth, postController.getPostById);
-router.post('/post', [
+router.post('/post',
+    isAuth,
+    [
         body('title').trim().isLength({min: 5}),
         body('content').trim().isLength({min: 5}),
     ],
-    isAuth,
     postController.postPosts);
 
 router.put('/post/:postId', isAuth, postController.updatePost);

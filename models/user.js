@@ -18,7 +18,10 @@ const userSchema = new Schema({
         type: String,
         default: 'I am new here!'
     },
-    posts: [],
+    posts: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Project'
+    }],
 
 }, {timestamps: true})
 

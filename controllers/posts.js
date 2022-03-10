@@ -1,7 +1,8 @@
 const { validationResult } = require('express-validator');
 const fs = require('fs');
 const path = require('path');
-const Post = require('../models/posts');
+const Post = require('../models/post');
+const User = require('../models/user');
 const { handleErrors } = require('../utils/utils');
 exports.getPosts = (req, res, next) => {
     const page = req.query.page || 1;
@@ -70,28 +71,31 @@ exports.postPosts = (req, res, next) => {
     let imageURL = req.file.path;
     let title = req.body.title;
     let content = req.body.content;
+    let creator;
     let post = new Post({
         title: title,
         content: content,
-        creator: {
-            name: "Zain "
-        },
+        creator: req.userId,
         imageURL: imageURL,
         createdAt: new Date()
     });
     post.save()
         .then(post => {
-            res.status(200).json({
+            return User.findById(req.userId);
+        })
+        .then(user => {
+            user.posts.push(post);
+            creator = user;
+            return user.save();
+        })
+        .then(result => {
+            res.status(201).json({
                 'message': 'post Added!',
-                'post':
-                    {
-                        _id: post._id,
-                        title: post.title,
-                        content: post.content,
-                        creator: post.creator,
-                        createdAt: Date.now()
-                    },
-
+                'post': post,
+                'creator': {
+                    _id : creator._id,
+                    name: creator.name
+                }
             })
         })
         .catch(err => {
