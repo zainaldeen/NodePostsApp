@@ -7,7 +7,7 @@ const multer = require('multer');
 const { fileStorage, fileFilter } = require('./utils/utils');
 const postRouter = require('./routes/posts');
 const authRouter = require('./routes/auth');
-
+const isAuth = require('./middleware/is-auth');
 const app = express();
 
 const MONGODB_URI = 'mongodb+srv://root:root@trainingapp.crp6h.mongodb.net/feeds-app?authSource=admin&replicaSet=atlas-azjdlh-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true';
