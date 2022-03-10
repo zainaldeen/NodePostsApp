@@ -31,8 +31,10 @@ app.use('/feeds', postRouter);
 app.use((error, req, res, next) => {
     let status = error.statusCode || 500;
     let message = error.message;
+    let data = error.data;
     return res.status(status).json({
         message: message,
+        data: data,
     })
 })
 

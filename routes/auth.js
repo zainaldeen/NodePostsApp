@@ -8,15 +8,25 @@ const authController = require('../controllers/auth');
 router.put('/signup',
     [
         body('name')
-            .isLength({$gt: 3}),
+            .trim()
+            .not()
+            .isEmpty()
+            .withMessage('The name is to short!'),
         body('email')
             .trim()
-            .isEmail(),
+            .isEmail()
+            .withMessage('The email is not correct!')
+            .custom((value, { req }) => {
+                User.findOne({email, value})
+                    .then(userDoc => {
+                        return Promise.reject('This email is already in use!');
+                    })
+            })
+            .normalizeEmail(),
         body('password')
             .trim()
-            .isLength({$gt: 7})
+            .isLength({min: 8})
             .isAlphanumeric(),
-        
     ],
     authController.signup);
 

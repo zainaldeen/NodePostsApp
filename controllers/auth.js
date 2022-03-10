@@ -10,7 +10,7 @@ exports.signup = (req, res, next) => {
     const password = req.body.password;
     const errors = validationResult(req);
     if (! errors.isEmpty()) {
-        throw handleErrors('Invalid Inputs');
+        throw handleErrors('Invalid Inputs', errors.array());
     }
     let newUser = new User();
     bcrypt.hash(password, 12)
