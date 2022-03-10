@@ -115,6 +115,7 @@ exports.updatePost = (req, res, next) => {
     let title = req.body.title;
     let content = req.body.content;
     let imageURL = req.body.image;
+    let userId = req.userId;
     if (!imageURL) {
         imageURL = req.file.path;
     }
@@ -125,6 +126,12 @@ exports.updatePost = (req, res, next) => {
         .then(post => {
             if (!post) {
                 throw handleErrors('Post Not Found!', 404)
+            }
+            if (post.creator.toString() !== userId) {
+                return res.status(403)
+                    .json({
+                        message: "Unauthorized!"
+                    })
             }
             const errors = validationResult(req);
             if (!errors.isEmpty()) {
@@ -152,7 +159,26 @@ exports.updatePost = (req, res, next) => {
 
 exports.deletePost = (req, res, next) => {
     const postId = req.params.postId;
-    Post.findOneAndDelete({ _id: postId})
+    const userId = req.userId;
+    Post.findOne({ _id: postId})
+        .then(post => {
+            if (!post) {
+                throw handleErrors('NOT FOUND!', 404);
+            }
+            if (post.creator.toString() !== userId) {
+                return res.status(403)
+                    .json({
+                        message: "Unauthorized!"
+                    })
+            }
+            clearImage(post.imageURL);
+            post.delete();
+            return User.findOne({_id: req.userId});
+        })
+        .then(user => {
+            user.posts.pull(postId);
+            return user.save();
+        })
         .then(result => {
             res.status(200).json({
                 message: 'Post Deleted Successfully!'
