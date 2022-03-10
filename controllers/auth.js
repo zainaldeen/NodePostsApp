@@ -10,16 +10,25 @@ exports.signup = (req, res, next) => {
     const password = req.body.password;
     const errors = validationResult(req);
     if (! errors.isEmpty()) {
-        throw handleErrors('Invalid Inputs', errors.array());
+        throw handleErrors('Invalid Inputs', 422, errors.array());
     }
-    let newUser = new User();
     bcrypt.hash(password, 12)
         .then(hashedPass => {
-            newUser.name = name;
-            newUser.email = email;
-            newUser.password = hashedPass;
-            newUser.posts = [];
-            newUser.save();
+            let user = new User({
+                name : name,
+                email : email,
+                password : hashedPass,
+                posts : [],
+            });
+
+            return user.save();
+        })
+        .then(user => {
+            res.status(201)
+                .json({
+                    message: 'Singed up successfully!!',
+                    id : user._id
+                })
         })
         .catch(err => {
             if (!err.statusCode) {

@@ -1,9 +1,10 @@
 const express = require('express');
-const router = express.Router();
 const { body } = require('express-validator');
-const User = require('../models/user');
 const authController = require('../controllers/auth');
 
+const User = require('../models/user');
+
+const router = express.Router();
 
 router.put('/signup',
     [
@@ -17,9 +18,11 @@ router.put('/signup',
             .isEmail()
             .withMessage('The email is not correct!')
             .custom((value, { req }) => {
-                User.findOne({email, value})
+                return User.findOne({email: value})
                     .then(userDoc => {
-                        return Promise.reject('This email is already in use!');
+                        if (userDoc){
+                            return Promise.reject('This email is already in use!');
+                        }
                     })
             })
             .normalizeEmail(),
