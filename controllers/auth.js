@@ -42,10 +42,10 @@ exports.login = async (req, res, next) => {
         const email = req.body.email;
         const password = req.body.password;
         const authedUser = await User.findOne({email: email});
-        if (!user) {
+        if (!authedUser) {
             throw handleErrors('Check Your Credentials Please!', 401);
         }
-        const isEqual = await bcrypt.compare(password, user.password);
+        const isEqual = await bcrypt.compare(password, authedUser.password);
         if (!isEqual) {
             throw handleErrors('Check Your Credentials Please!', 401);
         }
