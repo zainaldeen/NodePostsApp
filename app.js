@@ -1,5 +1,5 @@
 const express = require('express');
-const Socket = require('socket.io');
+const socket = require('./socket');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
@@ -46,8 +46,8 @@ mongoose
     .connect( MONGODB_URI )
     .then(result => {
         const server = app.listen(8080);
-        const io = Socket(server);
-        io.on('connection', () => {
+        const io = socket.init(server);
+        io.on('connection', socket => {
             console.log('Connected!');
         })
     })

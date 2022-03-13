@@ -3,7 +3,10 @@ const fs = require('fs');
 const path = require('path');
 const Post = require('../models/post');
 const User = require('../models/user');
+const io = require('../socket');
 const { handleErrors } = require('../utils/utils');
+
+
 exports.getPosts = async (req, res, next) => {
     const page = req.query.page || 1;
     const perPage = req.query.perPage || 2;
@@ -68,6 +71,7 @@ exports.postPosts = async (req, res, next) => {
         user.posts.push(post);
         creator = user;
         await user.save();
+        io.getIO().emit('posts', {action: 'create', post: post, creator: creator});
         res.status(201).json({
             'message': 'post Added!',
             'post': post,
