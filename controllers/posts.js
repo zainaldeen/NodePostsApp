@@ -12,7 +12,7 @@ exports.getPosts = async (req, res, next) => {
     const perPage = req.query.perPage || 2;
     try {
         const totalItems = await Post.countDocuments();
-        const posts = await Post.find().skip((page - 1) * perPage).limit(perPage);
+        const posts = await Post.find().populate('creator').skip((page - 1) * perPage).limit(perPage);
         res.status(200).json({
             'message': 'All Posts Available For You!',
             'posts': posts,
@@ -31,7 +31,7 @@ exports.getPosts = async (req, res, next) => {
 exports.getPostById = async (req, res, next) => {
     try {
         let postId = req.params.postId;
-        const post = await Post.findById(postId);
+        const post = await Post.findById(postId).populate('creator');
         if (!post) {
             throw handleErrors('Post Not Found!!!', 404)
         }
@@ -58,7 +58,6 @@ exports.postPosts = async (req, res, next) => {
         let imageURL = req.file.path;
         let title = req.body.title;
         let content = req.body.content;
-        let creator;
         let post = new Post({
             title: title,
             content: content,
@@ -67,11 +66,11 @@ exports.postPosts = async (req, res, next) => {
             createdAt: new Date()
         });
         await post.save();
-        const user = await User.findById(req.userId);
-        user.posts.push(post);
-        creator = user;
-        await user.save();
-        io.getIO().emit('posts', {action: 'create', post: post, creator: creator});
+        const creator = await User.findById(req.userId);
+        creator.posts.push(post);
+        await creator.save();
+        console.log(creator);
+        io.getIO().emit('posts', {action: 'create', post: { ...post._doc, creator:{_id: req.userId, name: creator.name}}});
         res.status(201).json({
             'message': 'post Added!',
             'post': post,
@@ -104,31 +103,33 @@ exports.updatePost = async (req, res, next) => {
         if (!imageURL) {
             throw handleErrors('No Image Selected!!', 422);
         }
-        const post = await Post.findById(postId);
-            if (!post) {
-                throw handleErrors('Post Not Found!', 404)
-            }
-            if (post.creator.toString() !== userId) {
-                return res.status(403)
-                    .json({
-                        message: "Unauthorized!"
-                    })
-            }
-            const errors = validationResult(req);
-            if (!errors.isEmpty()) {
-                throw handleErrors('Please Input Valid Data!', 422)
-            }
-            if (imageURL !== post.imageURL) {
-                clearImage(post.imageURL);
-            }
-            post.title = title;
-            post.content = content;
-            post.imageURL = imageURL;
-            post.save();
-            res.status(201).json({
-                message: 'Post Updated Successfully!',
-                post: post
-            });
+        const post = await Post.findById(postId).populate('creator');
+        if (!post) {
+            throw handleErrors('Post Not Found!', 404)
+        }
+        if (post.creator._id.toString() !== userId) {
+            return res.status(403)
+                .json({
+                    message: "Unauthorized!"
+                })
+        }
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            throw handleErrors('Please Input Valid Data!', 422)
+        }
+        if (imageURL !== post.imageURL) {
+            clearImage(post.imageURL);
+        }
+        post.title = title;
+        post.content = content;
+        post.imageURL = imageURL;
+        post.save();
+        console.log(post.creator);
+        io.getIO().emit('posts', {action: 'update', post: post, creator: post.creator});
+        res.status(201).json({
+            message: 'Post Updated Successfully!',
+            post: post
+        });
     } catch(err) {
         if (!err.statusCode) {
             err.statusCode = 500;
@@ -156,6 +157,7 @@ exports.deletePost = async (req, res, next) => {
         const user = await User.findOne({_id: req.userId});
         user.posts.pull(postId);
         await user.save();
+        io.getIO().emit('posts', { action: 'delete'});
         res.status(200).json({
             message: 'Post Deleted Successfully!'
         })
