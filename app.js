@@ -1,13 +1,14 @@
 const express = require('express');
-const socket = require('./socket');
 const path = require('path');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const multer = require('multer');
+const { graphqlHTTP } = require('express-graphql');
+const graphqlResolvers = require('./graphQl/resolver');
+const graphqlSchema = require('./graphQl/schema');
 
 const { fileStorage, fileFilter } = require('./utils/utils');
-const postRouter = require('./routes/posts');
-const authRouter = require('./routes/auth');
+
 const isAuth = require('./middleware/is-auth');
 const app = express();
 
@@ -29,8 +30,10 @@ app.use((req, res, next) => {
     next();
 })
 
-app.use('/feeds', postRouter);
-app.use('/auth', authRouter);
+app.use('/graphql', graphqlHTTP({
+    schema: graphqlSchema,
+    rootValue: graphqlResolvers
+}))
 
 app.use((error, req, res, next) => {
     let status = error.statusCode || 500;
@@ -46,10 +49,6 @@ mongoose
     .connect( MONGODB_URI )
     .then(result => {
         const server = app.listen(8080);
-        const io = socket.init(server);
-        io.on('connection', socket => {
-            console.log('Connected!');
-        })
     })
     .catch(err => {
         console.log(err);
