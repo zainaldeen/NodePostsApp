@@ -38,6 +38,7 @@ app.use('/graphql', graphqlHTTP({
     rootValue: graphqlResolvers,
     graphiql: true,
     formatError(err) {
+        console.log(err);
         if (!err.originalError) {
             return err;
         }
