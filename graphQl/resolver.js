@@ -37,8 +37,8 @@ module.exports = {
         }
     },
 
-    login: async function ({ loginData }, req) {
-        let error = [];
+    logIn: async function ({ loginData }) {
+
         const user = await User.findOne({email: loginData.email});
         if (!user) {
             const error = new Error("Check your credentials");

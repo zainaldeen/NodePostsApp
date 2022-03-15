@@ -22,10 +22,6 @@ module.exports = buildSchema(`
         updatedAt: String!
     }
     
-    type AuthData {
-        userId: String!
-        token: String!
-    }
     
     input UserInputData {
         email: String!
@@ -42,12 +38,13 @@ module.exports = buildSchema(`
         createUser(userInput: UserInputData): User!
     }
     
-    type LoginQuery {
-        loginIn(loginData: UserLoginData): AuthData!
+    type AuthData {
+        userId: String!
+        token: String!
     }
     
     type RootQuery {
-        hello: String
+        logIn(loginData: UserLoginData): AuthData!
     }
 
     schema {
