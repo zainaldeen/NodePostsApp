@@ -37,15 +37,15 @@ module.exports = {
         }
     },
 
-    logIn: async function ({ loginData }) {
+    logIn: async function ({ email, password }) {
 
-        const user = await User.findOne({email: loginData.email});
+        const user = await User.findOne({email: email});
         if (!user) {
             const error = new Error("Check your credentials");
             error.code = 401;
             throw error;
         }
-        const isEqual = await bcrypt.compare(loginData.password, user.password);
+        const isEqual = await bcrypt.compare(password, user.password);
         if (!isEqual){
             const error = new Error("Check your credentials");
             error.code = 401;
