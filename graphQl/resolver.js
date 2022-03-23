@@ -108,16 +108,20 @@ module.exports = {
         }
     },
 
-    getPosts: async function(args, req) {
+    getPosts: async function({ pagination }, req) {
         if (!req.isAuth) {
             const error = new Error("Unauthenticated");
             error.code = 401;
             throw error;
         }
+        let page = pagination.page;
+        let perPage = pagination.perPage;
         const totalItems = await Post.find().countDocuments();
         const posts = await Post.find()
             .sort({ createdAt: -1})
-            .populate('creator');
+            .populate('creator')
+            .skip((page -1) * perPage)
+            .limit(perPage);
         return {
             posts: posts.map(p => {
                 return {
