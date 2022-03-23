@@ -108,11 +108,26 @@ module.exports = {
         }
     },
 
-    posts: async function() {
-        const posts = await Post.find().populate('creator');
+    getPosts: async function(args, req) {
+        if (!req.isAuth) {
+            const error = new Error("Unauthenticated");
+            error.code = 401;
+            throw error;
+        }
+        const totalItems = await Post.find().countDocuments();
+        const posts = await Post.find()
+            .sort({ createdAt: -1})
+            .populate('creator');
         return {
-            posts: posts,
-            totalItems: posts.length,
+            posts: posts.map(p => {
+                return {
+                    ...p._doc,
+                    _id: p._id.toString(),
+                    createdAt: p.createdAt.toISOString(),
+                    updatedAt: p.updatedAt.toISOString()
+                }
+            }),
+            totalItems: totalItems,
         }
     }
 }
