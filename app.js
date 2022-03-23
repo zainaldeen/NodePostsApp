@@ -9,7 +9,7 @@ const graphqlSchema = require('./graphQl/schema');
 
 const { fileStorage, fileFilter } = require('./utils/utils');
 
-const isAuth = require('./middleware/is-auth');
+const auth = require('./middleware/auth');
 const app = express();
 
 const MONGODB_URI = 'mongodb+srv://root:root@trainingapp.crp6h.mongodb.net/feeds-app?authSource=admin&replicaSet=atlas-azjdlh-shard-0&readPreference=primary&appname=MongoDB%20Compass&ssl=true';
@@ -32,6 +32,9 @@ app.use((req, res, next) => {
     }
     next();
 })
+
+
+app.use(auth);
 
 app.use('/graphql', graphqlHTTP({
     schema: graphqlSchema,

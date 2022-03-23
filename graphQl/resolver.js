@@ -1,4 +1,5 @@
 const User = require('../models/user');
+const Post = require('../models/post');
 const bcrypt = require('bcrypt');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
@@ -38,7 +39,6 @@ module.exports = {
     },
 
     logIn: async function ({ loginData }) {
-        console.log(loginData);
         const user = await User.findOne({email: loginData.email});
         if (!user) {
             const error = new Error("Check your credentials");
@@ -46,7 +46,6 @@ module.exports = {
             throw error;
         }
         const isEqual = await bcrypt.compare(loginData.password, user.password);
-        console.log(isEqual);
         if (!isEqual){
             const error = new Error("Check your credentials");
             error.code = 401;
@@ -61,10 +60,59 @@ module.exports = {
                 expiresIn: '1h'
             }
         )
-
         return {
             userId: user._id.toString(),
             token: token
+        }
+    },
+
+    createPost: async function({ postInput }, req) {
+        let errors = [];
+        if (!req.isAuth) {
+            const error = new Error("Unauthenticated");
+            error.code = 401;
+            throw error;
+        }
+        if (validator.isEmpty(postInput.title) || !validator.isLength(postInput.title, { min: 5})) {
+            errors.push({message: "Invalid title for post", status: 422});
+        }
+        if (validator.isEmpty(postInput.content) || !validator.isLength(postInput.content, { min: 5})) {
+            errors.push({message: "Invalid content for post", status: 422});
+        }
+        if (validator.isEmpty(postInput.imageURL)) {
+            errors.push({message: "Invalid imageURL for post", status: 422});
+        }
+        if (errors.length > 0) {
+            const error = new Error('Invalid data');
+            error.code = 422;
+            error.data = errors;
+            throw error;
+        }
+        const user = await User.findById(req.userId);
+
+        const post = new Post({
+            title: postInput.title,
+            content: postInput.content,
+            imageURL: postInput.imageURL,
+            creator: user,
+            createdAt: Date.now(),
+        })
+        const savedPost = await post.save();
+        user.posts.push(post);
+        await user.save();
+        return {
+            ...savedPost._doc,
+            _id: savedPost._id.toString(),
+            createdAt: savedPost.createdAt.toISOString(),
+            updatedAt: savedPost.updatedAt.toISOString()
+        }
+    },
+
+    posts: async function() {
+        const posts = await Post.find().populate('creator');
+        return {
+            posts: posts,
+            totalItems: posts.length,
         }
     }
 }
