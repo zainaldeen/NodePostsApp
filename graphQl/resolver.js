@@ -114,8 +114,9 @@ module.exports = {
             error.code = 401;
             throw error;
         }
-        let page = pagination.page;
-        let perPage = pagination.perPage;
+        let page = pagination.page > 0 ? pagination.page : 1;
+        let perPage = pagination.perPage > 0 ?  pagination.perPage : 2;
+
         const totalItems = await Post.find().countDocuments();
         const posts = await Post.find()
             .sort({ createdAt: -1})
