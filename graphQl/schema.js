@@ -56,6 +56,12 @@ module.exports = buildSchema(`
         perPage: Int!
     }
     
+    type responseMessage {
+        success: Boolean!
+        error: Boolean!
+        message: String!
+    }
+    
     type RootQuery {
         logIn(loginData: UserLoginData): AuthData!
         getPosts(pagination: Pagination!): PostData!
@@ -67,6 +73,7 @@ module.exports = buildSchema(`
         createUser(userInput: UserInputData): User!
         createPost(postInput: PostInputData): Post!
         updatePost(postId: ID!, postData: PostInputData ): Post!
+        deletePost(postID: ID!): responseMessage!
     }
 
     schema {

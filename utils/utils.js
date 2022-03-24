@@ -1,5 +1,6 @@
 const multer = require('multer');
-
+const fs = require('fs');
+const path = require('path');
 exports.fileStorage = multer.diskStorage({
     destination: (req, file,  cb) => {
         cb(null, 'storage');
@@ -25,4 +26,9 @@ exports.handleErrors = (message, statusCode, data = null) => {
     error.statusCode = statusCode;
     error.data = data;
     return error;
+}
+
+exports.clearImage = filename => {
+    filename = path.join(__dirname, '..', filename);
+    fs.unlink(filename, err => console.log(err));
 }
