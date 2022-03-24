@@ -3,7 +3,7 @@ const Post = require('../models/post');
 const bcrypt = require('bcrypt');
 const validator = require('validator');
 const jwt = require('jsonwebtoken');
-
+const { clearImage } = require('../utils/utils');
 module.exports = {
     createUser: async function ({ userInput }, req){
         console.log(userInput);
@@ -195,7 +195,9 @@ module.exports = {
         const post = await Post.findOne({_id: postID});
         this.checkExistence(post);
         this.checkAuthority(req, post);
+        clearImage(post.imageURL);
         await post.delete();
+
         return {
             success: true,
             error: false,
@@ -237,5 +239,6 @@ module.exports = {
             error.code = 403;
             throw error;
         }
-    }
+    },
+
 }
