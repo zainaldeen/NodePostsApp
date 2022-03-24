@@ -190,6 +190,18 @@ module.exports = {
             updatedAt: updatedPost.updatedAt.toISOString()
         }
     },
+    async deletePost( { postID }, req) {
+        this.checkAuthentication(req);
+        const post = await Post.findOne({_id: postID});
+        this.checkExistence(post);
+        this.checkAuthority(req, post);
+        await post.delete();
+        return {
+            success: true,
+            error: false,
+            message: "Deleted Successfully!"
+        }
+    },
 
     checkValidation(postInput) {
         let errors = [];
@@ -203,5 +215,27 @@ module.exports = {
             errors.push({message: "Invalid imageURL for post", status: 422});
         }
         return errors;
+    },
+
+    checkAuthentication(req) {
+        if (!req.isAuth) {
+            const err = new Error('Unauthorized');
+            err.code = 401;
+            throw err;
+        }
+    },
+    checkExistence(data) {
+        if (!data) {
+            const err = new Error('Not Found');
+            err.code = 404;
+            throw err;
+        }
+    },
+    checkAuthority(req, data) {
+        if (data.creator._id.toString() !== req.userId.toString()) {
+            const error = new Error("Unauthorized");
+            error.code = 403;
+            throw error;
+        }
     }
 }
