@@ -190,14 +190,14 @@ module.exports = {
             updatedAt: updatedPost.updatedAt.toISOString()
         }
     },
-    async deletePost( { postID }, req) {
+    deletePost: async function( { postID }, req) {
         this.checkAuthentication(req);
         const post = await Post.findOne({_id: postID});
         this.checkExistence(post);
         this.checkAuthority(req, post);
         clearImage(post.imageURL);
         await post.delete();
-        const user = User.find({_id: req.userId});
+        const user = await User.findById(req.userId);
         user.posts.pull(postID);
         await user.save();
         return {
