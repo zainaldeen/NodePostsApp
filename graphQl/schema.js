@@ -66,6 +66,7 @@ module.exports = buildSchema(`
         logIn(loginData: UserLoginData): AuthData!
         getPosts(pagination: Pagination!): PostData!
         getPostById(postId: ID!): Post!
+        user: User!
     }
     
     
@@ -74,6 +75,7 @@ module.exports = buildSchema(`
         createPost(postInput: PostInputData): Post!
         updatePost(postId: ID!, postData: PostInputData ): Post!
         deletePost(postID: ID!): responseMessage!
+        updateUser(status: String!): User!
     }
 
     schema {
