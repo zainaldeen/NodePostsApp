@@ -217,6 +217,18 @@ module.exports = {
             updatedAt: user.updatedAt.toISOString()
         }
     },
+    updateUser: async function({ status }, req) {
+        this.checkAuthentication(req);
+        const user = await User.findById(req.userId);
+        user.status = status;
+        const updatedUser = await user.save();
+        return {
+            ...updatedUser._doc,
+            _id: updatedUser._id.toString(),
+            createdAt: updatedUser.createdAt.toISOString(),
+            updatedAt: updatedUser.updatedAt.toISOString()
+        }
+    },
 
     checkValidation(postInput) {
         let errors = [];
