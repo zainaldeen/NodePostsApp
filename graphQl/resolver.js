@@ -207,6 +207,17 @@ module.exports = {
         }
     },
 
+    user: async function({ args }, req) {
+        this.checkAuthentication(req);
+        const user = await User.findById(req.userId);
+        return {
+            ...user._doc,
+            _id: user._id.toString(),
+            createdAt: user.createdAt.toISOString(),
+            updatedAt: user.updatedAt.toISOString()
+        }
+    },
+
     checkValidation(postInput) {
         let errors = [];
         if (validator.isEmpty(postInput.title) || !validator.isLength(postInput.title, { min: 5})) {

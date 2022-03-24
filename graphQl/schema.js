@@ -66,6 +66,7 @@ module.exports = buildSchema(`
         logIn(loginData: UserLoginData): AuthData!
         getPosts(pagination: Pagination!): PostData!
         getPostById(postId: ID!): Post!
+        user: User!
     }
     
     
