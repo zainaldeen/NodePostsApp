@@ -22,8 +22,7 @@ module.exports = {
         }
         const existingUser = await User.findOne({email : userInput.email});
         if (existingUser) {
-            const err = new Error('User Already has an account!');
-            throw err;
+            throw err = new Error('User Already has an account!');
         }
         const hashedPW = await bcrypt.hash(userInput.password, 12);
         const user = new User({
@@ -73,15 +72,7 @@ module.exports = {
             error.code = 401;
             throw error;
         }
-        if (validator.isEmpty(postInput.title) || !validator.isLength(postInput.title, { min: 5})) {
-            errors.push({message: "Invalid title for post", status: 422});
-        }
-        if (validator.isEmpty(postInput.content) || !validator.isLength(postInput.content, { min: 5})) {
-            errors.push({message: "Invalid content for post", status: 422});
-        }
-        if (validator.isEmpty(postInput.imageURL)) {
-            errors.push({message: "Invalid imageURL for post", status: 422});
-        }
+        errors = this.checkValidation(postInput);
         if (errors.length > 0) {
             const error = new Error('Invalid data');
             error.code = 422;
@@ -157,5 +148,60 @@ module.exports = {
             createdAt: post.createdAt.toISOString(),
             updatedAt: post.updatedAt.toISOString()
         }
+    },
+    async updatePost({ postId, postData }, req) {
+        let errors = [];
+        if (!req.isAuth) {
+            const err = new Error('Unauthorized');
+            err.code = 401;
+            throw err;
+        }
+
+        const post = await Post.findOne({_id: postId}).populate('creator');
+        if (!post) {
+            const error = new Error("Not Found");
+            error.code = 404;
+            throw error;
+        }
+        if (post.creator._id.toString() !== req.userId.toString()) {
+            const error = new Error("Unauthorized");
+            error.code = 403;
+            throw error;
+        }
+        errors = this.checkValidation(postData);
+        if (errors.length > 0) {
+            const error = new Error('Invalid data');
+            error.code = 422;
+            error.data = errors;
+            throw error;
+        }
+
+        console.log(postData);
+        post.title = postData.title;
+        post.content = postData.content;
+        if (postData.imageURL !== 'undefined'){
+            post.imageURL = postData.imageURL;
+        }
+        let updatedPost = await post.save();
+        return {
+            ...updatedPost._doc,
+            _id: updatedPost._id.toString(),
+            createdAt: updatedPost.createdAt.toISOString(),
+            updatedAt: updatedPost.updatedAt.toISOString()
+        }
+    },
+
+    checkValidation(postInput) {
+        let errors = [];
+        if (validator.isEmpty(postInput.title) || !validator.isLength(postInput.title, { min: 5})) {
+            errors.push({message: "Invalid title for post", status: 422});
+        }
+        if (validator.isEmpty(postInput.content) || !validator.isLength(postInput.content, { min: 5})) {
+            errors.push({message: "Invalid content for post", status: 422});
+        }
+        if (validator.isEmpty(postInput.imageURL)) {
+            errors.push({message: "Invalid imageURL for post", status: 422});
+        }
+        return errors;
     }
 }
