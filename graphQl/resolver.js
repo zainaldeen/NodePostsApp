@@ -197,7 +197,9 @@ module.exports = {
         this.checkAuthority(req, post);
         clearImage(post.imageURL);
         await post.delete();
-
+        const user = User.find({_id: req.userId});
+        user.posts.pull(postID);
+        await user.save();
         return {
             success: true,
             error: false,
